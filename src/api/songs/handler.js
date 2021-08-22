@@ -1,29 +1,33 @@
 const ClientError = require('../../exceptions/ClientError');
 
-class MusicsHandler {
+class SongsHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
 
-    this.postMusicHandler = this.postMusicHandler.bind(this);
-    this.getMusicsHandler = this.getMusicsHandler.bind(this);
-    this.getMusicByIdHandler = this.getMusicByIdHandler.bind(this);
-    this.putMusicByIdHandler = this.putMusicByIdHandler.bind(this);
-    this.deleteMusicByIdHandler = this.deleteMusicByIdHandler.bind(this);
+    this.postSongHandler = this.postSongHandler.bind(this);
+    this.getSongsHandler = this.getSongsHandler.bind(this);
+    this.getSongByIdHandler = this.getSongByIdHandler.bind(this);
+    this.putSongByIdHandler = this.putSongByIdHandler.bind(this);
+    this.deleteSongByIdHandler = this.deleteSongByIdHandler.bind(this);
   }
 
-  async postMusicHandler(request, h) {
+  async postSongHandler(request, h) {
     try {
-      this._validator.validateMusicPayload(request.payload);
-      const { title = 'untitled', body, tags } = request.payload;
+      this._validator.validateSongPayload(request.payload);
+      const {
+        title = 'untitled', year, performer, genre, duration,
+      } = request.payload;
 
-      const musicId = await this._service.addMusic({ title, body, tags });
+      const songId = await this._service.addSong({
+        title, year, performer, genre, duration,
+      });
 
       const response = h.response({
         status: 'success',
         message: 'Musik berhasil ditambahkan',
         data: {
-          musicId,
+          songId,
         },
       });
       response.code(201);
@@ -39,7 +43,7 @@ class MusicsHandler {
       }
 
       const response = h.response({
-        status: 'error',
+        status: 'fail',
         message: 'Maaf, terjadi kegagalan pada server kami.',
       });
       response.code(500);
@@ -48,24 +52,24 @@ class MusicsHandler {
     }
   }
 
-  async getMusicsHandler() {
-    const musics = await this._service.getMusics();
+  async getSongsHandler() {
+    const songs = await this._service.getSongs();
     return {
       status: 'success',
       data: {
-        musics,
+        songs,
       },
     };
   }
 
-  async getMusicByIdHandler(request, h) {
+  async getSongByIdHandler(request, h) {
     try {
       const { id } = request.params;
-      const music = await this._service.getMusicById(id);
+      const song = await this._service.getSongById(id);
       return {
         status: 'success',
         data: {
-          music,
+          song,
         },
       };
     } catch (error) {
@@ -88,13 +92,17 @@ class MusicsHandler {
     }
   }
 
-  async putMusicByIdHandler(request, h) {
+  async putSongByIdHandler(request, h) {
     try {
-      this._validator.validateMusicPayload(request.payload);
-      const { title, body, tags } = request.payload;
+      this._validator.validateSongPayload(request.payload);
+      const {
+        title, year, performer, genre, duration,
+      } = request.payload;
       const { id } = request.params;
 
-      await this._service.editMusicById(id, { title, body, tags });
+      await this._service.editSongById(id, {
+        title, year, performer, genre, duration,
+      });
 
       return {
         status: 'success',
@@ -120,10 +128,10 @@ class MusicsHandler {
     }
   }
 
-  async deleteMusicByIdHandler(request, h) {
+  async deleteSongByIdHandler(request, h) {
     try {
       const { id } = request.params;
-      await this._service.deleteMusicById(id);
+      await this._service.deleteSongById(id);
 
       return {
         status: 'success',
@@ -150,4 +158,4 @@ class MusicsHandler {
   }
 }
 
-module.exports = MusicsHandler;
+module.exports = SongsHandler;
